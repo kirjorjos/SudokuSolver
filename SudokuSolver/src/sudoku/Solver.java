@@ -27,7 +27,7 @@ public class Solver {
 		return puzzle;
 	}
 	
-	public void benchmarkSolver() {
+	public long benchmarkSolver() {
         long startTime = System.nanoTime();
         
         boolean solvable = solve();
@@ -36,6 +36,7 @@ public class Solver {
         
         System.out.println("Solver Time: " + (endTime - startTime) / 1_000_000.0 + " ms");
         System.out.println("Puzzle is " + ((solvable)?"solvable.":"not solvable."));
+        return endTime - startTime;
     }
 	
 	/**
@@ -44,8 +45,6 @@ public class Solver {
 	 * @return If the state is legal or not
 	 */
 	public boolean constraintCheck() {
-		int leftDiagTotal = 0;
-		int rightDiagTotal = 0;
 		boolean[] seenInLeftDiag = new boolean[10];
 		boolean[] seenInRightDiag = new boolean[10];
 		boolean[][] seenInRow = new boolean[10][10];
@@ -56,11 +55,11 @@ public class Solver {
 				int currentValue = puzzle[i][j];
 				if (currentValue == 0) continue;
 				if (i == j) {
-					if ((leftDiagTotal+=currentValue) > 45 && seenInLeftDiag[i]) return false;
+					if (seenInLeftDiag[i]) return false;
 					seenInLeftDiag[i] = true;
 				}
 				if (i == 9-j) {
-					if ((rightDiagTotal+=currentValue) > 45 && seenInRightDiag[i]) return false;
+					if (seenInRightDiag[i]) return false;
 				}
 				if (seenInCol[currentValue]) return false;
 				if (seenInRow[j][currentValue]) return false;

@@ -5,12 +5,17 @@ import java.io.FileNotFoundException;
 
 public class TestSolver {
 	public static void main(String[] args) throws FileNotFoundException {
-		File dir = new File("src/sudoku/puzzles/");
+		File dir = new File("SudokuSolver/src/sudoku/puzzles/");
+		System.out.println(dir.getAbsolutePath());
+		double totalTime = 0;
+		int puzzleCount = 0;
 		for (File file : dir.listFiles()) {
 			Solver solver = new Solver(file);
-//			solver.benchmarkSolver(puzzle);
+//			totalTime+=solver.benchmarkSolver();
+//			puzzleCount++;
 			solver.printSoultion();
 			System.out.print("\n");
 		}
+		System.out.println("Average: " + totalTime/puzzleCount);
 	}
 }
