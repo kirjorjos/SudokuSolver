@@ -13,7 +13,7 @@ public class TestSolver {
 			Solver solver = new Solver(file);
 //			totalTime+=solver.benchmarkSolver();
 //			puzzleCount++;
-			solver.printSoultion();
+			solver.printSolution();
 			System.out.print("\n");
 		}
 		System.out.println("Average: " + totalTime/puzzleCount);

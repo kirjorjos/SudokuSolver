@@ -10,22 +10,42 @@ public class Solver {
 	private boolean solved;
 
 	public Solver(File file) throws FileNotFoundException {
-		puzzle = readPuzzle(file);
-	}
-	
-	public int[][] readPuzzle(File file) throws FileNotFoundException {
-		int[][] puzzle = new int[9][9];
-		Scanner fileText = new Scanner(file);
-		for (int i = 0; i < 9; i++) {
-			String line = fileText.nextLine();
-			String[] nums = line.split(" ");
-			for (int j = 0; j < 9; j++) {
-				puzzle[i][j] = Integer.parseInt(nums[j]);
-			}
-		}
-		fileText.close();
-		return puzzle;
-	}
+        puzzle = readPuzzle();  
+    }
+
+	public int[][] readPuzzle() throws FileNotFoundException { 
+		Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the file name to read the puzzle from: ");
+        String fileName = scanner.nextLine();
+        scanner.close();
+
+		File file = new File(fileName);  
+        int[][] puzzle = new int[9][9];
+
+        try (Scanner fileText = new Scanner(file)) {
+            for (int i = 0; i < 9; i++) {
+
+                String line = fileText.nextLine();
+                String[] nums = line.split(" ");
+
+                for (int j = 0; j < 9; j++) {
+                    try {
+                        puzzle[i][j] = Integer.parseInt(nums[j]);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Invalid number in the file. Ensure all numbers are integers.");
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: The file was not found.");
+            throw e;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
+
+        return puzzle;
+    }
 	
 	public long benchmarkSolver() {
         long startTime = System.nanoTime();
@@ -44,52 +64,60 @@ public class Solver {
 	 * @param puzzle The puzzle
 	 * @return If the state is legal or not
 	 */
-	public boolean constraintCheck() {
-		boolean[] seenInLeftDiag = new boolean[10];
-		boolean[] seenInRightDiag = new boolean[10];
-		boolean[][] seenInRow = new boolean[10][10];
-		boolean[][][] seenIn3x3 = new boolean[3][3][10];
-		for (int i = 0; i < 9; i++) {
-			boolean[] seenInCol = new boolean[10];
-			for (int j = 0; j < 9; j++) {
-				int currentValue = puzzle[i][j];
-				if (currentValue == 0) continue;
-				if (i == j) {
-					if (seenInLeftDiag[i]) return false;
-					seenInLeftDiag[i] = true;
-				}
-				if (i == 9-j) {
-					if (seenInRightDiag[i]) return false;
-				}
-				if (seenInCol[currentValue]) return false;
-				if (seenInRow[j][currentValue]) return false;
-				if (seenIn3x3[i/3][j/3][currentValue]) return false;
-				seenInCol[currentValue] = true;
-				seenInRow[j][currentValue] = true;
-				seenIn3x3[i/3][j/3][currentValue] = true;
+	public boolean constraintCheck(int row, int col, int num) {
+
+		// check rows 
+		for(int i = 0; i < 9; i++){
+			if (puzzle[row][i] == num){
+				return false;
+
 			}
 		}
+
+		//columns
+		for(int j = 0; j < 9; j++){
+			if(puzzle[j][col] == num){
+				return false;
+			}
+		}
+
+		//check squares
+		int intSquareRow = row - row % 3;
+		int intSquareCol = col - col % 3;
+		for (int i = intSquareRow; i < intSquareRow + 3; i++){
+			for (int j = intSquareCol; j < intSquareCol + 3; j++) {
+				if (puzzle[i][j] == num) {
+					return false;
+				}
+			}
+				}
+
+			
+			
 		return true;
 	}
-	
 	public boolean solve() {
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
 				if (puzzle[i][j] == 0) {
-					for (int k = 1; k < 10; k++) {
-						puzzle[i][j] = k;
-						if (constraintCheck() && solve()) return true;
-						puzzle[i][j] = 0;
+					for (int num = 1; num <= 9; num++) {
+						if (constraintCheck(i, j, num)) {  
+							puzzle[i][j] = num;
+							if (solve()) {       
+								return true;
+							}
+							puzzle[i][j] = 0;    
+						}
 					}
-					return false;
+					return false;              
 				}
 			}
 		}
 		solved = true;
-		return true;
+		return true;  
 	}
 
-	public void printSoultion() {
+	public void printSolution() {
 		if (!solved) solve();
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
