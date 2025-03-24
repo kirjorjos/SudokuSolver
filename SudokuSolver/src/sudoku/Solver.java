@@ -9,17 +9,19 @@ public class Solver {
 	private int[][] puzzle;
 	private boolean solved;
 
-	public Solver(File file) throws FileNotFoundException {
+	public Solver() throws FileNotFoundException {
         puzzle = readPuzzle();  
     }
 
 	public int[][] readPuzzle() throws FileNotFoundException { 
+		File workingDir = new File(".");
+		String puzzlesDir = workingDir.getAbsolutePath().split("SudokuSolver/")[0]+"SudokuSolver/SudokuSolver/src/sudoku/puzzles/";
 		Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the file name to read the puzzle from: ");
         String fileName = scanner.nextLine();
         scanner.close();
 
-		File file = new File(fileName);  
+		File file = new File(puzzlesDir+fileName);  
         int[][] puzzle = new int[9][9];
 
         try (Scanner fileText = new Scanner(file)) {
