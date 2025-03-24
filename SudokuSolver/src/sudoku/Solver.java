@@ -8,20 +8,46 @@ public class Solver {
 	
 	private int[][] puzzle;
 	private boolean solved;
+	private String puzzleDir = findPuzzleDir(".").replace("./", "");
 
 	public Solver() throws FileNotFoundException {
         puzzle = readPuzzle();  
     }
 
+	private static String findPuzzleDir(String workingDir) {
+		 File dir = new File(workingDir);
+
+		    if (dir.getName().equals("puzzles")) {
+		        return dir.getAbsolutePath();
+		    }
+
+		    if (!dir.isDirectory()) {
+		        return null;
+		    }
+		    
+		    File[] files = dir.listFiles();
+		    if (files != null) {
+		        for (File file : files) {
+		            if (file.isDirectory()) {
+		            	if (file.getName().equals("bin")) continue;
+		                String result = findPuzzleDir(file.getAbsolutePath());
+		                if (result != null) {
+		                    return result;
+		                }
+		            }
+		        }
+		    }
+		    return null; // Directory not found
+	}
+
 	public int[][] readPuzzle() throws FileNotFoundException { 
 		File workingDir = new File(".");
-		String puzzlesDir = workingDir.getAbsolutePath().split("SudokuSolver/")[0]+"SudokuSolver/SudokuSolver/src/sudoku/puzzles/";
 		Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the file name to read the puzzle from: ");
         String fileName = scanner.nextLine();
         scanner.close();
 
-		File file = new File(puzzlesDir+fileName);  
+		File file = new File(puzzleDir+"/"+fileName);  
         int[][] puzzle = new int[9][9];
 
         try (Scanner fileText = new Scanner(file)) {
