@@ -2,53 +2,27 @@ package sudoku;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Solver {
 	
 	private int[][] puzzle;
 	private boolean solved;
-	private String puzzleDir = findPuzzleDir(".").replace("./", "");
+	private final String[] possiblePuzzleDirs = new String[] {".", "./puzzles", "SudokuSolver/src/sudoku/puzzles", "src/sudoku/puzzles"};
 
-	public Solver() throws FileNotFoundException {
-        puzzle = readPuzzle();  
+	public Solver(String fileName) throws FileNotFoundException {
+        puzzle = readPuzzle(fileName);  
     }
 
-	private static String findPuzzleDir(String workingDir) {
-		 File dir = new File(workingDir);
-
-		    if (dir.getName().equals("puzzles")) {
-		        return dir.getAbsolutePath();
-		    }
-
-		    if (!dir.isDirectory()) {
-		        return null;
-		    }
-		    
-		    File[] files = dir.listFiles();
-		    if (files != null) {
-		        for (File file : files) {
-		            if (file.isDirectory()) {
-		            	if (file.getName().equals("bin")) continue;
-		                String result = findPuzzleDir(file.getAbsolutePath());
-		                if (result != null) {
-		                    return result;
-		                }
-		            }
-		        }
-		    }
-		    return null; // Directory not found
-	}
-
-	public int[][] readPuzzle() throws FileNotFoundException { 
-		File workingDir = new File(".");
-		Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the file name to read the puzzle from: ");
-        String fileName = scanner.nextLine();
-        scanner.close();
-
-		File file = new File(puzzleDir+"/"+fileName);  
-        int[][] puzzle = new int[9][9];
+	public int[][] readPuzzle(String fileName) throws FileNotFoundException {
+		File file = null;
+		for (String puzzleDir : possiblePuzzleDirs) {
+			file = new File(puzzleDir+"/"+fileName);
+			if (file.isFile()) break;
+		}
+		int[][] puzzle = new int[9][9];
 
         try (Scanner fileText = new Scanner(file)) {
             for (int i = 0; i < 9; i++) {
@@ -75,15 +49,17 @@ public class Solver {
         return puzzle;
     }
 	
+	/**
+	 * Time how long it takes to run a solve
+	 * @return The time it took to solve the puzzle in nanoseconds
+	 */
 	public long benchmarkSolver() {
         long startTime = System.nanoTime();
         
-        boolean solvable = solve();
+        solve();
         
         long endTime = System.nanoTime();
         
-        System.out.println("Solver Time: " + (endTime - startTime) / 1_000_000.0 + " ms");
-        System.out.println("Puzzle is " + ((solvable)?"solvable.":"not solvable."));
         return endTime - startTime;
     }
 	
@@ -124,6 +100,11 @@ public class Solver {
 			
 		return true;
 	}
+	
+	/**
+	 * Solve the puzzle
+	 * @return True if the puzzle was successfully solved, false if the puzzle is unsolvable
+	 */
 	public boolean solve() {
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
@@ -145,13 +126,39 @@ public class Solver {
 		return true;  
 	}
 
-	public void printSolution() {
+	/**
+	 * Print the current state of the puzzle to the console
+	 */
+	public void printPuzzle() {
 		if (!solved) solve();
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
 				System.out.print(puzzle[i][j]+" ");
 			}
 			System.out.print("\n");
+		}
+	}
+
+	/**
+	 * Save the current state of the puzzle to a file
+	 * @param outputFileName
+	 */
+	public void saveToFile(String outputFileName) {
+		try {
+			File file = new File(outputFileName);
+			FileWriter fileWriter = new FileWriter(file);
+			String fileContent = "";
+			for (int[] row : puzzle) {
+				for (int cell : row) {
+					fileContent += (Integer.toString(cell) + " ");
+				}
+				fileContent += "\n";
+			}
+			fileWriter.write(fileContent);
+			fileWriter.close();
+			System.out.println("File saved to \"" + file.getAbsolutePath() + "\".");
+		} catch (IOException e) {
+			System.out.println("There was a problem writing to \"" + new File(".").getAbsolutePath()+"/"+outputFileName+"\".  Please try again.");
 		}
 	}
 }
